@@ -25,7 +25,7 @@ public class Authentication {
 
     public static void pollSession(int uuid, CustomCallback<String> callback) {
         Handler handler = new Handler(Looper.getMainLooper());
-        int POLL_INTERVAL_MS = 3000;
+        int POLL_INTERVAL_MS = 15000;
         final int[] pollCount = {0};
         int MAX_POLLS = 10;
 
@@ -41,7 +41,6 @@ public class Authentication {
                             token = result;
                             callback.onSuccess(token);
                             Log.i("TOKEN",token);
-                            // stop polling
                         } else {
                             retry();
                         }
