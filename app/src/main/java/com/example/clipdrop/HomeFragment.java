@@ -3,6 +3,8 @@ package com.example.clipdrop;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,11 +58,26 @@ public class HomeFragment extends Fragment {
     }
 
     private void showNotification() {
+        Intent syncIntent = new Intent(requireContext(), NotificationSyncReceiver.class);
+        syncIntent.setAction("com.example.clipdrop.ACTION_SYNC");
+
+        PendingIntent syncPendingIntent = PendingIntent.getBroadcast(
+                requireContext(),
+                0,
+                syncIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Action syncAction =
+                new NotificationCompat.Action.Builder(0, "Sync", syncPendingIntent)
+                        .build();
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.clipboard_icon)
                 .setContentTitle("Data Upload/Download")
                 .setContentText("Click on Sync button for sharing data across clipboard")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .addAction(syncAction)
                 .setOngoing(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
