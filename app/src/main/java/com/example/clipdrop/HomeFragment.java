@@ -68,6 +68,8 @@ public class HomeFragment extends Fragment {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+
+
         NotificationCompat.Action syncAction =
                 new NotificationCompat.Action.Builder(0, "Sync", syncPendingIntent)
                         .build();
