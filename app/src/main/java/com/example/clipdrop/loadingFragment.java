@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import helper.Authentication;
 import helper.CustomCallback;
@@ -42,7 +41,6 @@ public class loadingFragment extends Fragment {
         CustomCallback<String> callback = new CustomCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                Log.i("TOKEN", result);
                 token.setValue(result);
             }
 

@@ -19,5 +19,5 @@ public interface ApiEndPoints {
 
     // 4. Get session key using UUID
     @GET("/session/key")
-    Call<PersonalBinObject> getKey(@Query("uuid") Integer uuid);
+    Call<PersonalBinObject> getKey(@Query("uuid") String uuid);
 }

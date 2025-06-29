@@ -98,7 +98,7 @@ public class PersonalBinApiWrapper {
         });
     }
 
-    public static void getKey(Integer uuid, CustomCallback<String> myCallback) {
+    public static void getKey(String uuid, CustomCallback<String> myCallback) {
         Call<PersonalBinObject> call = api.getKey(uuid);
 
         call.enqueue(new Callback<>() {

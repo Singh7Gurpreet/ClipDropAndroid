@@ -3,29 +3,22 @@ package helper;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Browser;
-import android.util.Log;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-
+import java.util.UUID;
 
 public class Authentication {
      static String token;
-     String SECRET_KEY="SECRET";
+     static KeyStorage keyStorage;
+
+    String SECRET_KEY="SECRET";
     private Authentication() {
 
     }
 
-    public static void pollSession(int uuid, CustomCallback<String> callback) {
+    public static void pollSession(String uuid, CustomCallback<String> callback) {
         Handler handler = new Handler(Looper.getMainLooper());
-        int POLL_INTERVAL_MS = 15000;
+        int POLL_INTERVAL_MS = 3000;
         final int[] pollCount = {0};
         int MAX_POLLS = 10;
 
@@ -37,10 +30,10 @@ public class Authentication {
                 PersonalBinApiWrapper.getKey(uuid, new CustomCallback<String>() {
                     @Override
                     public void onSuccess(String result) {
+
                         if (result != null && !result.isEmpty()) {
-                            token = result;
-                            callback.onSuccess(token);
-                            Log.i("TOKEN",token);
+                            keyStorage.saveKeyValue("JWT_KEY",result);
+                            callback.onSuccess(result);
                         } else {
                             retry();
                         }
@@ -63,27 +56,31 @@ public class Authentication {
             }
         };
 
-        handler.post(pollingTask[0]); // start the polling
+        handler.post(pollingTask[0]);
     }
 
 
     public static void initialize(Context context, CustomCallback<String> callback) {
-        // it will check for token first from localfile
-        // if exists simply check for it authentication
-        // if passed simply proceed to our wanted fragment
-        // else open this intent with poll session
+        keyStorage = new KeyStorage(context);
+        String token = keyStorage.getKeyValue("JWT_KEY");
 
-        // to-do on success store this key somewhere alright!
-
-        int id = 12;
-        String url = "https://personalbin.onrender.com/auth/google?uuid=" + id;
-
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        context.startActivity(browserIntent);
-
-        pollSession(id,callback);
+        if (token == null) {
+            String id = UUID.randomUUID().toString();
+            String url = "https://personalbin.onrender.com/auth/google?uuid=" + id;
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(browserIntent);
+            pollSession(id,callback);
+        } else {
+            callback.onSuccess(token);
+        }
     }
     public static String getToken() {
+        String result = keyStorage.getKeyValue("JWT_TOKEN");
         return token;
     }
+    private static void setToken(String t) {
+        keyStorage.saveKeyValue("JWT_TOKEN",t);
+        token = t;
+    }
+
 }
