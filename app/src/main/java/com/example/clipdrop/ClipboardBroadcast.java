@@ -6,13 +6,16 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 public class ClipboardBroadcast extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d("CALLED", Objects.requireNonNull(intent.getAction()));
         if("com.example.CLIPBOARD_CONTENT".equals(intent.getAction())) {
             String text = intent.getStringExtra("data");
-            Log.d("DATA",text);
+            Log.d("data",text);
             Toast.makeText(context,text,Toast.LENGTH_LONG).show();
         }
     }

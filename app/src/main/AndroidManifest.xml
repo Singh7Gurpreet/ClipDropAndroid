@@ -24,9 +24,9 @@
         <activity android:name=".ClipBoardActivity" />
         <receiver android:name=".ClipboardBroadcast"
             android:exported="true">
-        <intent-filter>
-            <action android:name="com.example.CLIPBOARD_CONTENT" />
-        </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.CLIPBOARD_CONTENT" />
+            </intent-filter>
         </receiver>
     </application>
 
