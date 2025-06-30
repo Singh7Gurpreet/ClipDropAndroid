@@ -53,7 +53,6 @@ public class HomeFragment extends Fragment {
         } else {
             showNotification();
         }
-
         return view;
     }
 

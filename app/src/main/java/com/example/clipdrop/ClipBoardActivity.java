@@ -24,12 +24,14 @@ public class ClipBoardActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             registerReceiver(c, filter, Context.RECEIVER_NOT_EXPORTED);
         }
+        Log.e("COUNT","CREATED CLIPBOARD ACTIVITY");
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(hasFocus) {
+
             fetchContent();
             finishAndRemoveTask();
         }
