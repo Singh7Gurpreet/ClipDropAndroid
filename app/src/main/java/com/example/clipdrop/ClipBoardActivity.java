@@ -1,14 +1,12 @@
 package com.example.clipdrop;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import helper.Authentication;
-import helper.CustomCallback;
 
 public class ClipBoardActivity extends AppCompatActivity {
 
@@ -16,9 +14,30 @@ public class ClipBoardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.clipboard_activity);
+    }
 
-        Log.d("ClipBoardActivity", "Activity started!");
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasFocus) {
+            fetchContent();
+            finish();
+        }
+    }
 
-        new Handler(Looper.getMainLooper()).postDelayed(this::finish, 5000);
+    private void fetchContent() {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard.hasPrimaryClip()) {
+            ClipData clipData = clipboard.getPrimaryClip();
+            if (clipData != null && clipData.getItemCount() > 0) {
+                CharSequence text = clipData.getItemAt(0).getText();
+                if (text != null) {
+                    Log.d("NONDATA",text.toString());
+                    Intent intent = new Intent("com.example.CLIPBOARD_CONTENT");
+                    intent.putExtra("data",text.toString());
+                    sendBroadcast(intent);
+                }
+            }
+        }
     }
 }

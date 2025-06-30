@@ -58,10 +58,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void showNotification() {
-        Intent syncIntent = new Intent(requireContext(), NotificationSyncReceiver.class);
-        syncIntent.setAction("com.example.clipdrop.ACTION_SYNC");
+        Intent syncIntent = new Intent(requireContext(), ClipBoardActivity.class);
+        syncIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        PendingIntent syncPendingIntent = PendingIntent.getBroadcast(
+        PendingIntent syncPendingIntent = PendingIntent.getActivity(
                 requireContext(),
                 0,
                 syncIntent,
