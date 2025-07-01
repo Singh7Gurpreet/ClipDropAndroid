@@ -16,6 +16,8 @@ public class PersonalBinObject {
     @Expose
     private String token;
 
+    @SerializedName("timeStamp")
+    private int timeStamp;
     public PersonalBinObject() {
 
     }
@@ -29,6 +31,8 @@ public class PersonalBinObject {
     public String getLink() {
         return link;
     }
+
+    public int getTimeStamp() { return timeStamp;}
 
     public String getToken() {
         return token;

@@ -2,7 +2,7 @@ package helper;
 
 import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
-
+import java.util.AbstractMap;
 import java.io.IOException;
 
 public class PersonalBinApiWrapper {
@@ -22,9 +22,9 @@ public class PersonalBinApiWrapper {
     }
 
     // STATIC method - async version NOT recommended for immediate return
-    public static String getFile(String token) {
+    public static PersonalBinObject getFile(String token) {
         String cookie = "token=" + token;
-        final String[] result = new String[1];
+        final PersonalBinObject[] result = new PersonalBinObject[1];
 
         Call<PersonalBinObject> call = api.getFile(cookie);
         call.enqueue(new Callback<PersonalBinObject>() {
@@ -37,7 +37,7 @@ public class PersonalBinApiWrapper {
                     } else {
                         PersonalBinObject file = response.body();
                         assert file != null;
-                        result[0] = file.getLink();
+                        result[0] = file;
                     }
                 } else {
                     System.out.println("Maybe unauthorized " + response.code());
