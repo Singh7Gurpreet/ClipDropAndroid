@@ -16,19 +16,25 @@ public class S3FileManager {
 
     //Return false if not downloaded else true if downloaded
     public static boolean downloadFile() {
-        PersonalBinObject object = PersonalBinApiWrapper.getFile(Authentication.getToken());
-        if (object != null) {
-            String link = object.getLink();
-            String fileName = object.getFileName();
-            try {
-                downloadFileHttpHandler(link, fileName);
-                return true;
-            } catch (IOException e) {
-                Log.e("Downloading file error", e.getMessage());
-                e.printStackTrace();
-                return false;
+        CustomCallback<PersonalBinObject> myCallBack = new CustomCallback<PersonalBinObject>() {
+            @Override
+            public void onSuccess(PersonalBinObject result) {
+                    new Thread(() -> {
+                        try {
+                            downloadFileHttpHandler(result.getLink(), result.getFileName()); // your network code
+                            System.out.println("Done with downloading");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
             }
-        }
+
+            @Override
+            public void onFailure(PersonalBinObject errorMessage) {
+                Log.e("Hello","Error from download file");
+            }
+        };
+        PersonalBinApiWrapper.getFile(Authentication.getToken(),myCallBack);
         return false;
     }
 
@@ -53,7 +59,7 @@ public class S3FileManager {
             int bytesRead;
 
             while ((bytesRead = bufferedInput.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                bufferOutput.write(buffer, 0, BUFFER_SIZE);
+                bufferOutput.write(buffer, 0, bytesRead);
             }
             bufferOutput.flush();
         }

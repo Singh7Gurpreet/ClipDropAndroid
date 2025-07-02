@@ -17,7 +17,7 @@ public class PersonalBinObject {
     private String token;
 
     @SerializedName("timeStamp")
-    private int timeStamp;
+    private String timeStamp;
     public PersonalBinObject() {
 
     }
@@ -32,7 +32,7 @@ public class PersonalBinObject {
         return link;
     }
 
-    public int getTimeStamp() { return timeStamp;}
+    public String getTimeStamp() { return timeStamp;}
 
     public String getToken() {
         return token;

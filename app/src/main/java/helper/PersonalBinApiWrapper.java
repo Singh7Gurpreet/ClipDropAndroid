@@ -1,5 +1,9 @@
 package helper;
 
+import android.util.Log;
+
+import com.google.gson.Gson;
+
 import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.AbstractMap;
@@ -22,37 +26,32 @@ public class PersonalBinApiWrapper {
     }
 
     // STATIC method - async version NOT recommended for immediate return
-    public static PersonalBinObject getFile(String token) {
+    public static void getFile(String token, CustomCallback<PersonalBinObject> myCallback) {
         String cookie = "token=" + token;
-        final PersonalBinObject[] result = new PersonalBinObject[1];
-
+        Log.e("cookie",cookie);
         Call<PersonalBinObject> call = api.getFile(cookie);
-        call.enqueue(new Callback<PersonalBinObject>() {
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<PersonalBinObject> call, Response<PersonalBinObject> response) {
                 if (response.isSuccessful()) {
-                    if (response.code() == 404) {
-                        System.out.println("File not found");
-                        result[0] = null;
-                    } else {
-                        PersonalBinObject file = response.body();
-                        assert file != null;
-                        result[0] = file;
-                    }
+                    PersonalBinObject file = response.body();
+                    myCallback.onSuccess(file);
                 } else {
-                    System.out.println("Maybe unauthorized " + response.code());
-                    result[0] = null;
+                    if (response.code() == 404) {
+                        System.out.println("NOT FOUND" + "Download file not found");
+                    } else {
+                        System.out.println("UNAUTHORIZED" + "Unauthorized user not allowed");
+                    }
+                    myCallback.onFailure(null);
                 }
             }
 
             @Override
             public void onFailure(Call<PersonalBinObject> call, Throwable t) {
-                result[0] = null;
+                myCallback.onFailure(null);
                 t.printStackTrace();
             }
         });
-
-        return result[0];  // ⚠ This will probably return null because it's async
     }
 
     // STATIC synchronous POST

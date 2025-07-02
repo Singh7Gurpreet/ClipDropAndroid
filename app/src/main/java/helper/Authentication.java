@@ -5,10 +5,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+
 import java.util.UUID;
 
 public class Authentication {
      static String token;
+     static String KEY_NAME = "JWT_TOKEN";
      static KeyStorage keyStorage;
 
     String SECRET_KEY="SECRET";
@@ -32,7 +35,7 @@ public class Authentication {
                     public void onSuccess(String result) {
 
                         if (result != null && !result.isEmpty()) {
-                            keyStorage.saveKeyValue("JWT_KEY",result);
+                            keyStorage.saveKeyValue(KEY_NAME,result);
                             callback.onSuccess(result);
                         } else {
                             retry();
@@ -62,24 +65,25 @@ public class Authentication {
 
     public static void initialize(Context context, CustomCallback<String> callback) {
         keyStorage = new KeyStorage(context);
-        String token = keyStorage.getKeyValue("JWT_KEY");
-
-        if (token == null) {
+        String result = getToken();
+        if (result == null) {
             String id = UUID.randomUUID().toString();
             String url = "https://personalbin.onrender.com/auth/google?uuid=" + id;
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             context.startActivity(browserIntent);
             pollSession(id,callback);
         } else {
-            callback.onSuccess(token);
+            setToken(result);
+            callback.onSuccess(result);
         }
     }
     public static String getToken() {
-        String result = keyStorage.getKeyValue("JWT_TOKEN");
-        return token;
+        String result = keyStorage.getKeyValue(KEY_NAME);
+
+        return result;
     }
     private static void setToken(String t) {
-        keyStorage.saveKeyValue("JWT_TOKEN",t);
+        keyStorage.saveKeyValue(KEY_NAME,t);
         token = t;
     }
 
