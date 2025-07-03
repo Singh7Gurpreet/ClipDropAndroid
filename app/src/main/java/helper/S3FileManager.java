@@ -17,18 +17,19 @@ import java.net.URL;
 
 public class S3FileManager {
     private static int BUFFER_SIZE = 4096;
-
     //Return false if not downloaded else true if downloaded
-    public static boolean downloadFile(Context context) {
-        CustomCallback<PersonalBinObject> myCallBack = new CustomCallback<PersonalBinObject>() {
+    public static boolean downloadFile(Context context,CustomCallback<Boolean> myCallback) {
+        CustomCallback<PersonalBinObject> localCallback = new CustomCallback<PersonalBinObject>() {
             @Override
             public void onSuccess(PersonalBinObject result) {
                     new Thread(() -> {
                         try {
                             downloadFileHttpHandler(context,result.getLink(), result.getFileName()); // your network code
                             System.out.println("Done with downloading");
+                            myCallback.onSuccess(true);
                         } catch (IOException e) {
                             e.printStackTrace();
+                            myCallback.onFailure(false);
                         }
                     }).start();
             }
@@ -38,7 +39,7 @@ public class S3FileManager {
                 Log.e("Hello","Error from download file");
             }
         };
-        PersonalBinApiWrapper.getFile(Authentication.getToken(),myCallBack);
+        PersonalBinApiWrapper.getFile(Authentication.getToken(),localCallback);
         return false;
     }
 
@@ -54,7 +55,7 @@ public class S3FileManager {
             throw new IOException("Downloading failed because it is HTTP_NOT_OKAY");
         }
         InputStream is = conn.getInputStream();
-        File file = new File(context.getFilesDir(), "text.txt");
+        File file = new File(context.getFilesDir(), fileName);
         try (
                 BufferedInputStream bufferedInput = new BufferedInputStream(is);
                 FileOutputStream fileOutput = new FileOutputStream(file);
