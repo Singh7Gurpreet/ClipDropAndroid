@@ -31,7 +31,6 @@ public class ClipBoardActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(hasFocus) {
-
             fetchContent();
             finishAndRemoveTask();
         }

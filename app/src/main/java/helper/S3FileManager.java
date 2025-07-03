@@ -1,7 +1,5 @@
 package helper;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -21,7 +19,7 @@ public class S3FileManager {
     public static boolean downloadFile(Context context,CustomCallback<Boolean> myCallback) {
         CustomCallback<PersonalBinObject> localCallback = new CustomCallback<PersonalBinObject>() {
             @Override
-            public void onSuccess(PersonalBinObject result) {
+            public boolean onSuccess(PersonalBinObject result) {
                     new Thread(() -> {
                         try {
                             downloadFileHttpHandler(context,result.getLink(), result.getFileName()); // your network code
@@ -32,11 +30,13 @@ public class S3FileManager {
                             myCallback.onFailure(false);
                         }
                     }).start();
+                return false;
             }
 
             @Override
-            public void onFailure(PersonalBinObject errorMessage) {
+            public boolean onFailure(PersonalBinObject errorMessage) {
                 Log.e("Hello","Error from download file");
+                return false;
             }
         };
         PersonalBinApiWrapper.getFile(Authentication.getToken(),localCallback);
@@ -72,7 +72,7 @@ public class S3FileManager {
         conn.disconnect();
     }
 
-    public static void uploadFile(URI uri,String mimeType) {
+    public static void uploadFile(String mimeType,URI uri) {
 
     }
 

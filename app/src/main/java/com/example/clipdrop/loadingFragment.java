@@ -40,13 +40,15 @@ public class loadingFragment extends Fragment {
         // Trigger auth check
         CustomCallback<String> callback = new CustomCallback<String>() {
             @Override
-            public void onSuccess(String result) {
+            public boolean onSuccess(String result) {
                 token.setValue(result);
+                return false;
             }
 
             @Override
-            public void onFailure(String errorMessage) {
+            public boolean onFailure(String errorMessage) {
                 Log.e("TOKEN", errorMessage);
+                return false;
             }
         };
         Authentication.initialize(requireContext(), callback);

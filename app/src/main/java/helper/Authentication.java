@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class Authentication {
             public void run() {
                 PersonalBinApiWrapper.getKey(uuid, new CustomCallback<String>() {
                     @Override
-                    public void onSuccess(String result) {
+                    public boolean onSuccess(String result) {
 
                         if (result != null && !result.isEmpty()) {
                             keyStorage.saveKeyValue(KEY_NAME,result);
@@ -40,11 +39,13 @@ public class Authentication {
                         } else {
                             retry();
                         }
+                        return false;
                     }
 
                     @Override
-                    public void onFailure(String errorMessage) {
+                    public boolean onFailure(String errorMessage) {
                         retry();
+                        return false;
                     }
 
                     private void retry() {
