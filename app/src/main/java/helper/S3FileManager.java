@@ -1,7 +1,11 @@
 package helper;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +14,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 
 public class S3FileManager {
@@ -44,7 +49,6 @@ public class S3FileManager {
     }
 
     private static void downloadFileHttpHandler(Context context,String link, String fileName) throws IOException {
-        System.out.println(link+fileName);
         URL url = new URL(link);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -72,11 +76,60 @@ public class S3FileManager {
         conn.disconnect();
     }
 
-    public static void uploadFile(String mimeType,URI uri) {
+    public static void uploadFile(Context context, Uri uri) {
+        String fileName;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+            cursor.close();
+        } else {
+            fileName = "";
+        }
 
+        String mimeType = context.getContentResolver().getType(uri);
+
+        if (mimeType == null) {
+            String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+        }
+        new Thread(()->{
+            String link = PersonalBinApiWrapper.postFile(Authentication.getToken(),fileName);
+
+            if(link == null) {
+                Log.e("Aws s3 link avail Error","Link not available");
+            } else {
+                uploadFileHelper(link,context,uri);
+            }
+        }).start();
+    };
+
+    private static void uploadFileHelper(String link, Context context, Uri uri) {
+        try {
+            URL url = new URL(link);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("PUT");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/octet-stream");
+            // Open input stream from the file URI
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+
+            // Write file data to the output stream
+            try (BufferedOutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
+                byte[] buffer = new byte[8192]; // 8 KB buffer
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                out.flush();
+            }
+
+            inputStream.close();
+
+            int responseCode = conn.getResponseCode();
+            Log.d("UPLOAD", "Response Code: " + responseCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void uploadFileHelper() {
-
-    }
 }

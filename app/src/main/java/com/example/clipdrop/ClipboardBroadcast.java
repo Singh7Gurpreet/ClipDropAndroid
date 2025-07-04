@@ -3,14 +3,21 @@ package com.example.clipdrop;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.webkit.MimeTypeMap;
+
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import helper.CustomCallback;
 import helper.S3FileManager;
@@ -26,28 +33,28 @@ public class ClipboardBroadcast extends BroadcastReceiver {
             String text = intent.getStringExtra("data");
             myContext = context;
 
-            if (text == null || text.isEmpty() || text.equals(content)) {
-                // Start download and handle everything inside the callback
-                S3FileManager.downloadFile(myContext, new CustomCallback<Boolean>() {
-                    @Override
-                    public boolean onSuccess(Boolean result) {
-                        String fileContent = readFile(); // Now returns string
-                        content = fileContent;
-                        pasteToClipboard(fileContent);
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onFailure(Boolean errorMessage) {
-                        Log.e("FILE DOWNLOAD FAILED", String.valueOf(errorMessage));
-                        return false;
-                    }
-                });
-            } else {
-                content = text;
+//            if (text == null || text.isEmpty() || text.equals(content)) {
+//                // Start download and handle everything inside the callback
+//                S3FileManager.downloadFile(myContext, new CustomCallback<Boolean>() {
+//                    @Override
+//                    public boolean onSuccess(Boolean result) {
+//                        String fileContent = readFile(); // Now returns string
+//                        content = fileContent;
+//                        pasteToClipboard(fileContent);
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public boolean onFailure(Boolean errorMessage) {
+//                        Log.e("FILE DOWNLOAD FAILED", String.valueOf(errorMessage));
+//                        return false;
+//                    }
+//                });
+//            } else {
+//                content = text;
                 writeToFile(text);
                 upload();
-            }
+//            }
         }
     }
 
@@ -63,8 +70,16 @@ public class ClipboardBroadcast extends BroadcastReceiver {
     }
 
     private void upload() {
-//        S3FileManager.uploadFile(myContext, FILE_NAME_STORAGE);
+        File file = new File(myContext.getFilesDir(), FILE_NAME_STORAGE);
+
+        Uri uri = FileProvider.getUriForFile(
+                myContext,
+                myContext.getPackageName() + ".fileprovider",
+                file
+        );
+        S3FileManager.uploadFile(myContext, uri);
     }
+
 
     private void pasteToClipboard(String content) {
         ClipboardManager clipboard = (ClipboardManager) myContext.getSystemService(Context.CLIPBOARD_SERVICE);
