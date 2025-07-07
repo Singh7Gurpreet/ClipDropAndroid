@@ -18,10 +18,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+
 public class HomeFragment extends Fragment {
 
     ViewPager2 viewPager;
     MyViewPagerAdapter viewPagerAdapter;
+    TabLayout tabLayout;
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -56,18 +60,35 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewPagerHandler(view);
+    }
+
+    private void viewPagerHandler(@NonNull View view) {
         viewPagerAdapter = new MyViewPagerAdapter(
                 getActivity().getSupportFragmentManager(),
                 getLifecycle()
         );
-
+        tabLayout = view.findViewById(R.id.tabLayout);
         viewPagerAdapter.addFragment(new DownloadUploadFragment());
         viewPagerAdapter.addFragment(new HistoryFragment());
-
         viewPager = view.findViewById(R.id.viewPager);
-
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-
         viewPager.setAdapter(viewPagerAdapter);
+
+        new TabLayoutMediator(
+                tabLayout,
+                viewPager,
+                new TabLayoutMediator.TabConfigurationStrategy() {
+                    @Override
+                    public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                        if (position == 0) {
+                            tab.setText("Home");
+                        } else if (position == 1) {
+                            tab.setText("History");
+                        }
+                    }
+                }).attach();
+
+        Log.e("TAB","EXECUTED");
     }
 }
