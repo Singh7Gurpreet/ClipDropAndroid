@@ -7,8 +7,11 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +20,8 @@ import android.view.ViewGroup;
 
 public class HomeFragment extends Fragment {
 
+    ViewPager2 viewPager;
+    MyViewPagerAdapter viewPagerAdapter;
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -46,5 +51,23 @@ public class HomeFragment extends Fragment {
         }
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewPagerAdapter = new MyViewPagerAdapter(
+                getActivity().getSupportFragmentManager(),
+                getLifecycle()
+        );
+
+        viewPagerAdapter.addFragment(new DownloadUploadFragment());
+        viewPagerAdapter.addFragment(new HistoryFragment());
+
+        viewPager = view.findViewById(R.id.viewPager);
+
+        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+
+        viewPager.setAdapter(viewPagerAdapter);
     }
 }
