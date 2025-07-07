@@ -26,10 +26,10 @@ public class PersonalBinApiWrapper {
     }
 
     // STATIC method - async version NOT recommended for immediate return
-    public static void getFile(String token, CustomCallback<PersonalBinObject> myCallback) {
+    public static void getFile(TYPE_OF_FILE type,String token, CustomCallback<PersonalBinObject> myCallback) {
         String cookie = "token=" + token;
         Log.e("cookie",cookie);
-        Call<PersonalBinObject> call = api.getFile(cookie);
+        Call<PersonalBinObject> call = api.getFile(type.getValue(),cookie);
         call.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<PersonalBinObject> call, Response<PersonalBinObject> response) {
@@ -55,12 +55,12 @@ public class PersonalBinApiWrapper {
     }
 
     // STATIC synchronous POST
-    public static String postFile(String token, String fileName) {
+    public static String postFile(TYPE_OF_FILE type,String token, String fileName) {
         try {
             String cookie = "token=" + token;
             PersonalBinObject object = new PersonalBinObject(null, fileName);
 
-            Call<PersonalBinObject> call = api.postFile(cookie, object);
+            Call<PersonalBinObject> call = api.postFile(type.getValue(),cookie, object);
             Response<PersonalBinObject> response = call.execute();  // BLOCKS
 
             if (response.isSuccessful() && response.body() != null) {

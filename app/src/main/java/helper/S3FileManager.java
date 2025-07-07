@@ -21,7 +21,7 @@ import java.net.URL;
 public class S3FileManager {
     private static int BUFFER_SIZE = 4096;
     //Return false if not downloaded else true if downloaded
-    public static boolean downloadFile(Context context,CustomCallback<Boolean> myCallback) {
+    public static boolean downloadFile(Context context,CustomCallback<Boolean> myCallback,TYPE_OF_FILE type) {
         CustomCallback<PersonalBinObject> localCallback = new CustomCallback<PersonalBinObject>() {
             @Override
             public boolean onSuccess(PersonalBinObject result) {
@@ -44,7 +44,7 @@ public class S3FileManager {
                 return false;
             }
         };
-        PersonalBinApiWrapper.getFile(Authentication.getToken(),localCallback);
+        PersonalBinApiWrapper.getFile(type,Authentication.getToken(),localCallback);
         return false;
     }
 
@@ -76,7 +76,7 @@ public class S3FileManager {
         conn.disconnect();
     }
 
-    public static void uploadFile(Context context, Uri uri) {
+    public static void uploadFile(Context context, Uri uri,TYPE_OF_FILE type) {
         String fileName;
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
@@ -93,7 +93,7 @@ public class S3FileManager {
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
         }
         new Thread(()->{
-            String link = PersonalBinApiWrapper.postFile(Authentication.getToken(),fileName);
+            String link = PersonalBinApiWrapper.postFile(type, Authentication.getToken(),fileName);
 
             if(link == null) {
                 Log.e("Aws s3 link avail Error","Link not available");

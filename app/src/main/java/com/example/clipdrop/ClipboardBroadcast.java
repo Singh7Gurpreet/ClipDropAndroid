@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import helper.CustomCallback;
 import helper.S3FileManager;
+import helper.TYPE_OF_FILE;
 
 public class ClipboardBroadcast extends BroadcastReceiver {
     Context myContext;
@@ -33,28 +34,28 @@ public class ClipboardBroadcast extends BroadcastReceiver {
             String text = intent.getStringExtra("data");
             myContext = context;
 
-//            if (text == null || text.isEmpty() || text.equals(content)) {
-//                // Start download and handle everything inside the callback
-//                S3FileManager.downloadFile(myContext, new CustomCallback<Boolean>() {
-//                    @Override
-//                    public boolean onSuccess(Boolean result) {
-//                        String fileContent = readFile(); // Now returns string
-//                        content = fileContent;
-//                        pasteToClipboard(fileContent);
-//                        return true;
-//                    }
-//
-//                    @Override
-//                    public boolean onFailure(Boolean errorMessage) {
-//                        Log.e("FILE DOWNLOAD FAILED", String.valueOf(errorMessage));
-//                        return false;
-//                    }
-//                });
-//            } else {
-//                content = text;
+            if (text == null || text.isEmpty() || text.equals(content)) {
+                // Start download and handle everything inside the callback
+                S3FileManager.downloadFile(myContext, new CustomCallback<Boolean>() {
+                    @Override
+                    public boolean onSuccess(Boolean result) {
+                        String fileContent = readFile(); // Now returns string
+                        content = fileContent;
+                        pasteToClipboard(fileContent);
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onFailure(Boolean errorMessage) {
+                        Log.e("FILE DOWNLOAD FAILED", String.valueOf(errorMessage));
+                        return false;
+                    }
+                }, TYPE_OF_FILE.CLIPBOARD);
+            } else {
+                content = text;
                 writeToFile(text);
                 upload();
-//            }
+            }
         }
     }
 
@@ -64,6 +65,7 @@ public class ClipboardBroadcast extends BroadcastReceiver {
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(content.getBytes());
             fos.close();
+            Log.d("Upload", "File written at: " + file.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,7 +79,7 @@ public class ClipboardBroadcast extends BroadcastReceiver {
                 myContext.getPackageName() + ".fileprovider",
                 file
         );
-        S3FileManager.uploadFile(myContext, uri);
+        S3FileManager.uploadFile(myContext, uri,TYPE_OF_FILE.CLIPBOARD);
     }
 
 
