@@ -88,7 +88,5 @@ public class HomeFragment extends Fragment {
                         }
                     }
                 }).attach();
-
-        Log.e("TAB","EXECUTED");
     }
 }
