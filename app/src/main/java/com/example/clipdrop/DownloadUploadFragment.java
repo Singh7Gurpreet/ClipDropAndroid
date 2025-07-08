@@ -9,6 +9,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
+import helper.S3FileManager;
+import helper.TYPE_OF_FILE;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +22,7 @@ import java.net.URI;
 public class DownloadUploadFragment extends Fragment {
     private final ActivityResultLauncher<String> fileExplorerOpener =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                Log.i("URI", String.valueOf(uri));
+                S3FileManager.uploadFile(requireContext(),uri, TYPE_OF_FILE.STORAGE);
             });
 
     public DownloadUploadFragment() {

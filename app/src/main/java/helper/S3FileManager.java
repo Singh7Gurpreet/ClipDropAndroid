@@ -110,15 +110,23 @@ public class S3FileManager {
             conn.setRequestMethod("PUT");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/octet-stream");
+
+            //long totalLength = getFileSizeFromUri(context,uri);
             // Open input stream from the file URI
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
-
+//
             // Write file data to the output stream
             try (BufferedOutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
-                byte[] buffer = new byte[8192]; // 8 KB buffer
+                byte[] buffer = new byte[16824]; // 8 KB buffer
                 int bytesRead;
+//                long totalBytesRead = 0;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     out.write(buffer, 0, bytesRead);
+
+//                    totalBytesRead += bytesRead;
+//                    int progress = (int) ((totalBytesRead/(float)totalLength) * 100);
+//
+//                    Log.i("Downloaded", String.valueOf(progress));
                 }
                 out.flush();
             }
@@ -130,6 +138,20 @@ public class S3FileManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public static long getFileSizeFromUri(Context context, Uri uri) {
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        long size = -1;
+
+        if (cursor != null) {
+            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+            if (sizeIndex != -1 && cursor.moveToFirst()) {
+                size = cursor.getLong(sizeIndex);
+            }
+            cursor.close();
+        }
+
+        return size;
     }
 
 }
