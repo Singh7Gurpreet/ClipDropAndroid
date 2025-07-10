@@ -1,5 +1,6 @@
 package com.example.clipdrop;
 
+import static android.content.Intent.getIntent;
 import static androidx.core.content.ContextCompat.registerReceiver;
 
 import android.content.Context;
@@ -56,7 +57,6 @@ public class DownloadUploadFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        //if download does not exists smiply give the option to upload
         View view = inflater.inflate(R.layout.fragment_loading, container, false);
         FrameLayout contentContainer = view.findViewById(R.id.containerContent);
 
