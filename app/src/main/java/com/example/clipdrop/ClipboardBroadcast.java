@@ -20,6 +20,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import helper.CustomCallback;
+import helper.PersonalBinObject;
 import helper.S3FileManager;
 import helper.TYPE_OF_FILE;
 
@@ -33,22 +34,28 @@ public class ClipboardBroadcast extends BroadcastReceiver {
         if ("com.example.CLIPBOARD_CONTENT".equals(intent.getAction())) {
             String text = intent.getStringExtra("data");
             myContext = context;
-
             if (text == null || text.isEmpty() || text.equals(content)) {
                 // Start download and handle everything inside the callback
-                S3FileManager.downloadFile(myContext, new CustomCallback<Boolean>() {
+                S3FileManager.downloadFile(myContext, new CustomCallback<PersonalBinObject>() {
                     @Override
-                    public boolean onSuccess(Boolean result) {
-                        String fileContent = readFile(); // Now returns string
-                        content = fileContent;
-                        pasteToClipboard(fileContent);
-                        return true;
+                    public void onSuccess(PersonalBinObject result) {
+
+                        new Thread(()->{
+                            try {
+                                S3FileManager.downloadFileHttpHandler(myContext,result.getLink(),result.getFileName());
+                                Log.i("TASK","DONE WITH DOWNLOADING");
+                                String fileContent = readFile();
+                                content = fileContent;
+                                pasteToClipboard(fileContent);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
                     }
 
                     @Override
-                    public boolean onFailure(Boolean errorMessage) {
+                    public void onFailure(PersonalBinObject errorMessage) {
                         Log.e("FILE DOWNLOAD FAILED", String.valueOf(errorMessage));
-                        return false;
                     }
                 }, TYPE_OF_FILE.CLIPBOARD);
             } else {

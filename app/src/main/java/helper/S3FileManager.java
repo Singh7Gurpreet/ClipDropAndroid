@@ -21,34 +21,27 @@ import java.net.URL;
 public class S3FileManager {
     private static int BUFFER_SIZE = 4096;
     //Return false if not downloaded else true if downloaded
-    public static boolean downloadFile(Context context,CustomCallback<Boolean> myCallback,TYPE_OF_FILE type) {
+    public static boolean downloadFile(Context context,CustomCallback<PersonalBinObject> myCallback,TYPE_OF_FILE type) {
         CustomCallback<PersonalBinObject> localCallback = new CustomCallback<PersonalBinObject>() {
             @Override
-            public boolean onSuccess(PersonalBinObject result) {
+            public void onSuccess(PersonalBinObject result) {
                     new Thread(() -> {
-                        try {
-                            downloadFileHttpHandler(context,result.getLink(), result.getFileName()); // your network code
-                            System.out.println("Done with downloading");
-                            myCallback.onSuccess(true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            myCallback.onFailure(false);
-                        }
+                            myCallback.onSuccess(result);
                     }).start();
-                return false;
             }
 
             @Override
-            public boolean onFailure(PersonalBinObject errorMessage) {
+            public void onFailure(PersonalBinObject errorMessage) {
                 Log.e("Hello","Error from download file");
-                return false;
+                myCallback.onFailure(null);
             }
         };
         PersonalBinApiWrapper.getFile(type,Authentication.getToken(),localCallback);
         return false;
     }
 
-    private static void downloadFileHttpHandler(Context context,String link, String fileName) throws IOException {
+    public static void downloadFileHttpHandler(Context context,String link, String fileName) throws IOException {
+        assert(link != null);
         URL url = new URL(link);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -96,7 +89,7 @@ public class S3FileManager {
             String link = PersonalBinApiWrapper.postFile(type, Authentication.getToken(),fileName);
 
             if(link == null) {
-                Log.e("Aws s3 link avail Error","Link not available");
+                Log.e("A3 ERROR","Link not available");
             } else {
                 uploadFileHelper(link,context,uri);
             }

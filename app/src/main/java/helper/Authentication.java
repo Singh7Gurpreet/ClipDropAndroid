@@ -31,7 +31,7 @@ public class Authentication {
             public void run() {
                 PersonalBinApiWrapper.getKey(uuid, new CustomCallback<String>() {
                     @Override
-                    public boolean onSuccess(String result) {
+                    public void onSuccess(String result) {
 
                         if (result != null && !result.isEmpty()) {
                             keyStorage.saveKeyValue(KEY_NAME,result);
@@ -39,13 +39,11 @@ public class Authentication {
                         } else {
                             retry();
                         }
-                        return false;
                     }
 
                     @Override
-                    public boolean onFailure(String errorMessage) {
+                    public void onFailure(String errorMessage) {
                         retry();
-                        return false;
                     }
 
                     private void retry() {

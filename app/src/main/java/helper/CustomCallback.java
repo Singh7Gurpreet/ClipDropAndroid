@@ -1,7 +1,7 @@
 package helper;
 
 public interface CustomCallback<T> {
-    boolean onSuccess(T result);
+    void onSuccess(T result);
 
-    boolean onFailure(T errorMessage);
+    void onFailure(T errorMessage);
 }

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,7 +23,6 @@ public class ClipBoardActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             registerReceiver(c, filter, Context.RECEIVER_NOT_EXPORTED);
         }
-        Log.e("COUNT","CREATED CLIPBOARD ACTIVITY");
     }
 
     @Override
