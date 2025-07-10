@@ -70,21 +70,9 @@ public class S3FileManager {
     }
 
     public static void uploadFile(Context context, Uri uri,TYPE_OF_FILE type) {
-        String fileName;
-        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
-            cursor.close();
-        } else {
-            fileName = "";
-        }
+       String fileName = getFileNameFromUri(context,uri);
 
-        String mimeType = context.getContentResolver().getType(uri);
-
-        if (mimeType == null) {
-            String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
-        }
+       String mimeType = getMimeTypeFromUri(context,uri);
         new Thread(()->{
             String link = PersonalBinApiWrapper.postFile(type, Authentication.getToken(),fileName);
 
@@ -132,6 +120,29 @@ public class S3FileManager {
             e.printStackTrace();
         }
     }
+
+    public static String getFileNameFromUri(Context context, Uri uri) {
+        String fileName;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+            cursor.close();
+        } else {
+            fileName = "NameNotFound";
+        }
+        return fileName;
+    }
+
+    public static String getMimeTypeFromUri(Context  context, Uri uri) {
+        String mimeType = context.getContentResolver().getType(uri);
+
+        if (mimeType == null) {
+            String extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+        }
+        return mimeType;
+    }
+
     public static long getFileSizeFromUri(Context context, Uri uri) {
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         long size = -1;
