@@ -1,12 +1,10 @@
 package com.example.clipdrop;
 
-import static android.content.Intent.getIntent;
 import static androidx.core.content.ContextCompat.registerReceiver;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -25,6 +23,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+
+import java.io.IOException;
 
 public class DownloadUploadFragment extends Fragment {
     private UploadHelper uploadHelper = new UploadHelper();
@@ -62,6 +62,9 @@ public class DownloadUploadFragment extends Fragment {
         CustomCallback<PersonalBinObject> callback = new CustomCallback<PersonalBinObject>() {
             @Override
             public void onSuccess(PersonalBinObject result) {
+                requireActivity().runOnUiThread(() -> {
+                    showDownloadView(inflater, container, contentContainer, result);
+                });
             }
 
             @Override
@@ -76,8 +79,23 @@ public class DownloadUploadFragment extends Fragment {
         return view;
     }
 
-    private void showUploadView(LayoutInflater inflater, ViewGroup container, FrameLayout contentContainer) {
+    private void showDownloadView(LayoutInflater inflater, ViewGroup container, FrameLayout contentContainer, PersonalBinObject result) {
+        contentContainer.removeAllViews();
+        View downloadView = inflater.inflate(R.layout.fragment_download,container,false);
+        contentContainer.addView(downloadView);
+        TextView t = downloadView.findViewById(R.id.textView);
+        Button button = downloadView.findViewById(R.id.button);
+        t.setText(result.getFileName());
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    S3FileManager.downloadFileHttpHandler(requireContext(),result.getLink(),result.getFileName());
+            }
+        });
 
+    }
+
+    private void showUploadView(LayoutInflater inflater, ViewGroup container, FrameLayout contentContainer) {
                 contentContainer.removeAllViews();
                 View uploadView = inflater.inflate(R.layout.fragment_upload,container,false);
                 contentContainer.addView(uploadView);
@@ -100,7 +118,7 @@ public class DownloadUploadFragment extends Fragment {
                         intent.setPackage("com.example.clipdrop");
                         intent.putExtra("uri",uploadHelper.getUri());
                         Log.e("Name",S3FileManager.getFileNameFromUri(requireContext(),uploadHelper.getUri()));
-//                        requireContext().sendBroadcast(intent);
+                        requireContext().sendBroadcast(intent);
                     }
                 });
 

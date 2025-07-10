@@ -41,15 +41,11 @@ public class ClipboardBroadcast extends BroadcastReceiver {
                     public void onSuccess(PersonalBinObject result) {
 
                         new Thread(()->{
-                            try {
                                 S3FileManager.downloadFileHttpHandler(myContext,result.getLink(),result.getFileName());
                                 Log.i("TASK","DONE WITH DOWNLOADING");
                                 String fileContent = readFile();
                                 content = fileContent;
                                 pasteToClipboard(fileContent);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
                         }).start();
                     }
 

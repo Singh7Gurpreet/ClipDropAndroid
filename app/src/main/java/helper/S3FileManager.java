@@ -3,6 +3,7 @@ package helper;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -40,34 +41,52 @@ public class S3FileManager {
         return false;
     }
 
-    public static void downloadFileHttpHandler(Context context,String link, String fileName) throws IOException {
-        assert(link != null);
-        URL url = new URL(link);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
+    public static void downloadFileHttpHandler(Context context, String link, String fileName) {
+        new Thread(() -> {
+            try {
+                assert (link != null);
+                URL url = new URL(link);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
 
-        int responseCode = conn.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            throw new IOException("Downloading failed because it is HTTP_NOT_OKAY");
-        }
-        InputStream is = conn.getInputStream();
-        File file = new File(context.getFilesDir(), fileName);
-        try (
-                BufferedInputStream bufferedInput = new BufferedInputStream(is);
-                FileOutputStream fileOutput = new FileOutputStream(file);
-                BufferedOutputStream bufferOutput = new BufferedOutputStream(fileOutput);
-        ) {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
+                int responseCode = conn.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new IOException("Downloading failed: HTTP_NOT_OK");
+                }
 
-            while ((bytesRead = bufferedInput.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                bufferOutput.write(buffer, 0, bytesRead);
+                InputStream is = conn.getInputStream();
+
+
+                File dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS); // You can choose another dir
+                if (dir != null && !dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                File file = new File(dir, fileName);
+
+                try (
+                        BufferedInputStream bufferedInput = new BufferedInputStream(is);
+                        FileOutputStream fileOutput = new FileOutputStream(file);
+                        BufferedOutputStream bufferOutput = new BufferedOutputStream(fileOutput)
+                ) {
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = bufferedInput.read(buffer, 0, buffer.length)) != -1) {
+                        bufferOutput.write(buffer, 0, bytesRead);
+                    }
+                    bufferOutput.flush();
+                }
+
+                conn.disconnect();
+                Log.d("Download", "File saved at: " + file.getAbsolutePath());
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            bufferOutput.flush();
-        }
-        conn.disconnect();
+        }).start();
     }
+
 
     public static void uploadFile(Context context, Uri uri,TYPE_OF_FILE type) {
        String fileName = getFileNameFromUri(context,uri);
