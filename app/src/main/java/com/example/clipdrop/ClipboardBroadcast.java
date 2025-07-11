@@ -41,7 +41,7 @@ public class ClipboardBroadcast extends BroadcastReceiver {
                     public void onSuccess(PersonalBinObject result) {
 
                         new Thread(()->{
-                                S3FileManager.downloadFileHttpHandler(myContext,result.getLink(),result.getFileName());
+                                S3FileManager.downloadFileHttpHandler(myContext,result.getLink(),result.getFileName(),TYPE_OF_FILE.CLIPBOARD);
                                 Log.i("TASK","DONE WITH DOWNLOADING");
                                 String fileContent = readFile();
                                 content = fileContent;

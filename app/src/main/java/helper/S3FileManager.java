@@ -41,7 +41,14 @@ public class S3FileManager {
         return false;
     }
 
-    public static void downloadFileHttpHandler(Context context, String link, String fileName) {
+    public static void downloadFileHttpHandler(Context context, String link, String fileName,TYPE_OF_FILE type) {
+        NotificationProgressUtil notification;
+        if(type == TYPE_OF_FILE.STORAGE) {
+            notification = new NotificationProgressUtil(UPLOAD_DOWNLOAD.DOWNLOAD, context);
+            notification.showNotification();
+        } else {
+            notification = null;
+        }
         new Thread(() -> {
             try {
                 assert (link != null);
@@ -64,7 +71,7 @@ public class S3FileManager {
                 }
 
                 File file = new File(dir, fileName);
-
+                Long totalSize = file.length();
                 try (
                         BufferedInputStream bufferedInput = new BufferedInputStream(is);
                         FileOutputStream fileOutput = new FileOutputStream(file);
@@ -72,7 +79,13 @@ public class S3FileManager {
                 ) {
                     byte[] buffer = new byte[8192];
                     int bytesRead;
+                    long totalBytesRead = 0;
                     while ((bytesRead = bufferedInput.read(buffer, 0, buffer.length)) != -1) {
+                        totalBytesRead += bytesRead;
+
+                        int progress = (int) ((totalBytesRead/(float)totalSize) * 100);
+                        if(type == TYPE_OF_FILE.STORAGE)
+                            notification.updateProgress(progress);
                         bufferOutput.write(buffer, 0, bytesRead);
                     }
                     bufferOutput.flush();
@@ -80,6 +93,8 @@ public class S3FileManager {
 
                 conn.disconnect();
                 Log.d("Download", "File saved at: " + file.getAbsolutePath());
+                if(type == TYPE_OF_FILE.STORAGE)
+                    notification.completeProgressNotification();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -98,12 +113,17 @@ public class S3FileManager {
             if(link == null) {
                 Log.e("A3 ERROR","Link not available");
             } else {
-                uploadFileHelper(link,context,uri);
+                uploadFileHelper(link,context,uri,type);
             }
         }).start();
     };
 
-    private static void uploadFileHelper(String link, Context context, Uri uri) {
+    private static void uploadFileHelper(String link, Context context, Uri uri,TYPE_OF_FILE type) {
+        NotificationProgressUtil notification = null;
+        if(type == TYPE_OF_FILE.STORAGE) {
+            notification = new NotificationProgressUtil(UPLOAD_DOWNLOAD.UPLOAD, context);
+            notification.showNotification();
+        }
         try {
             URL url = new URL(link);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -111,7 +131,7 @@ public class S3FileManager {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/octet-stream");
 
-            //long totalLength = getFileSizeFromUri(context,uri);
+            long totalLength = getFileSizeFromUri(context,uri);
             // Open input stream from the file URI
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
 //
@@ -119,14 +139,15 @@ public class S3FileManager {
             try (BufferedOutputStream out = new BufferedOutputStream(conn.getOutputStream())) {
                 byte[] buffer = new byte[16824]; // 8 KB buffer
                 int bytesRead;
-//                long totalBytesRead = 0;
+                long totalBytesRead = 0;
                 while ((bytesRead = inputStream.read(buffer)) != -1) {
                     out.write(buffer, 0, bytesRead);
 
-//                    totalBytesRead += bytesRead;
-//                    int progress = (int) ((totalBytesRead/(float)totalLength) * 100);
-//
-//                    Log.i("Downloaded", String.valueOf(progress));
+                    totalBytesRead += bytesRead;
+                    int progress = (int) ((totalBytesRead/(float)totalLength) * 100);
+                    Log.i("Progress",String.valueOf(progress));
+                    if(type == TYPE_OF_FILE.STORAGE)
+                    notification.updateProgress(progress);
                 }
                 out.flush();
             }
@@ -135,6 +156,8 @@ public class S3FileManager {
 
             int responseCode = conn.getResponseCode();
             Log.d("UPLOAD", "Response Code: " + responseCode);
+            if(type == TYPE_OF_FILE.STORAGE)
+            notification.completeProgressNotification();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -89,7 +89,7 @@ public class DownloadUploadFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    S3FileManager.downloadFileHttpHandler(requireContext(),result.getLink(),result.getFileName());
+                    S3FileManager.downloadFileHttpHandler(requireContext(),result.getLink(),result.getFileName(),TYPE_OF_FILE.STORAGE);
             }
         });
 
